@@ -12,5 +12,6 @@ namespace ElevenNote.Models
         public int CategoryId { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
+        public bool IsStarred { get; set; }
     }
 }
