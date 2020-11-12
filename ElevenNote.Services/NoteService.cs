@@ -12,7 +12,7 @@ namespace ElevenNote.Services
     public class NoteService
     {
         private readonly Guid _userId;
-        public NoteService (Guid userID)
+        public NoteService(Guid userID)
         {
             _userId = userID;
         }
@@ -23,6 +23,7 @@ namespace ElevenNote.Services
             {
                 OwnerID = _userId,
                 Title = model.Title,
+                CategoryID = model.CategoryId,
                 Content = model.Content,
                 CreatedUtc = DateTimeOffset.Now
             };
@@ -44,7 +45,9 @@ namespace ElevenNote.Services
                     e => new NoteListItem
                     {
                         NoteId = e.NoteId,
+                        CategoryName = e.Category.Name,
                         Title = e.Title,
+                        IsStarred = e.IsStarred,
                         CreatedUtc = e.CreatedUtc
                     }
                     );
@@ -65,6 +68,8 @@ namespace ElevenNote.Services
                     {
                         NoteId = entity.NoteId,
                         Title = entity.Title,
+                        CategoryId = entity.CategoryID,
+                        CategoryName = entity.Category.Name,
                         Content = entity.Content,
                         CreatedUtc = entity.CreatedUtc,
                         ModifiedUtc = entity.ModifiedUtc
@@ -81,8 +86,24 @@ namespace ElevenNote.Services
                         .Single(e => e.NoteId == model.NoteId && e.OwnerID == _userId);
                 
                 entity.Title = model.Title;
+                entity.CategoryID = model.CategoryId;
                 entity.Content = model.Content;
                 entity.ModifiedUtc = DateTimeOffset.UtcNow;
+
+                return ctx.SaveChanges() == 1;
+            }
+        }
+
+        public bool DeleteNote(int noteId)
+        {
+            using (var ctx = new ApplicationDbContext())
+            {
+                var entity =
+                    ctx
+                        .Notes
+                        .Single(e => e.NoteId == noteId && e.OwnerID == _userId);
+
+                ctx.Notes.Remove(entity);
 
                 return ctx.SaveChanges() == 1;
             }
